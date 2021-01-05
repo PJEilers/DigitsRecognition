@@ -90,8 +90,8 @@ class Loader():
             dataset=self.train
 
         for c in range(10):
-            for i in range(len(self.dataset[str(c)])):
-                x.append(self.dataset[str(c)][i])
+            for i in range(len(dataset[str(c)])):
+                x.append(dataset[str(c)][i])
                 y.append(c)
 
         return x,y
@@ -107,8 +107,8 @@ class Loader():
             dataset = self.test
 
         for c in range(10):
-            for i in range(len(self.dataset[str(c)])):
-                x.append(self.dataset[str(c)][i])
+            for i in range(len(dataset[str(c)])):
+                x.append(dataset[str(c)][i])
                 y.append(c)
 
         return x, y
