@@ -1,7 +1,5 @@
-import os
 import numpy as np
 from matplotlib import cm
-from matplotlib import pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import random as r
@@ -78,6 +76,23 @@ class Loader():
             im = np.array(im)
 
         return im
+
+    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1):
+        im = self.getImage(c=c, idx=idx, aug=False, set=set)
+        #add Noise to image
+        noise = np.random.rand(16,15)
+        im = im + (intensity*noise)
+        return im
+
+    def getNoisySet(self, intensity=0.1, set="test"):
+        x = []
+        y = []
+        for c in range(10):
+            for idx in range(100):
+                x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity))
+                y.append(c)
+
+        return x,y
 
     def getWholeTrainSet(self, pca=False):
         x = []
