@@ -54,7 +54,7 @@ class Loader():
 
         return im
 
-    def getImage(self, c=-1, idx=-1, aug=False, set="train"):
+    def getImage(self, c=-1, idx=-1, aug=False, set="train", flat=False):
         #First pick a class and index if none are provided
         if c == -1:
             c = r.randint(0,9)
@@ -75,26 +75,37 @@ class Loader():
             im = ImageOps.fit(im, (16, 15))
             im = np.array(im)
 
+        if flat:
+            im = im.flatten()
+
         return im
 
-    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1):
-        im = self.getImage(c=c, idx=idx, aug=False, set=set)
+    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1, flat=False):
+        im = self.getImage(c=c, idx=idx, aug=False, set=set, flat=flat)
         #add Noise to image
         noise = np.random.rand(16,15)
         im = im + (intensity*noise)
         return im
 
-    def getNoisySet(self, intensity=0.1, set="test"):
+    def getNoisySet(self, intensity=0.1, set="test", flat=False, shuffle=False):
         x = []
         y = []
         for c in range(10):
             for idx in range(100):
-                x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity))
+                x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat))
                 y.append(c)
+
+        x = np.array(x)
+        y = np.array(y)
+        if shuffle:
+            order = np.arange(x.shape[0])
+            np.random.shuffle(order)
+            x = x[order]
+            y = y[order]
 
         return x,y
 
-    def getWholeTrainSet(self, pca=False):
+    def getWholeTrainSet(self, pca=False, shuffle=False):
         x = []
         y = []
 
@@ -109,9 +120,17 @@ class Loader():
                 x.append(dataset[str(c)][i])
                 y.append(c)
 
+        x = np.array(x)
+        y = np.array(y)
+        if shuffle:
+            order = np.arange(x.shape[0])
+            np.random.shuffle(order)
+            x = x[order]
+            y = y[order]
+
         return x,y
 
-    def getWholeTestSet(self, pca=False):
+    def getWholeTestSet(self, pca=False, shuffle=False):
         x = []
         y = []
 
@@ -125,5 +144,13 @@ class Loader():
             for i in range(len(dataset[str(c)])):
                 x.append(dataset[str(c)][i])
                 y.append(c)
+
+        x = np.array(x)
+        y = np.array(y)
+        if shuffle:
+            order = np.arange(x.shape[0])
+            np.random.shuffle(order)
+            x = x[order]
+            y = y[order]
 
         return x, y
