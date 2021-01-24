@@ -12,6 +12,8 @@ class Loader():
 
     pca_train = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
     pca_test = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
+    
+    n_comp = 75;
 
     def __init__(self):
         self.data = np.genfromtxt("mfeat-pix.txt", dtype=None)
@@ -25,6 +27,7 @@ class Loader():
 
 
     def pca(self, n_comp=75):
+        self.n_comp = n_comp;
         scaled = StandardScaler().fit_transform(self.data)
         pca_digit = PCA(n_components=n_comp)
         pca_done = pca_digit.fit_transform(scaled)
@@ -87,17 +90,33 @@ class Loader():
     def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1, flat=False):
         im = self.getImage(c=c, idx=idx, aug=False, set=set, flat=flat)
         #add Noise to image
-        noise = np.random.rand(16,15)
+        if flat:
+            noise = np.random.rand(240)
+        else:
+            noise = np.random.rand(16,15)
+        im = im + (intensity*noise)
+        return im
+    
+    def getNoisyPcaImage(self, c=-1, idx=-1, set="test", intensity = 0.1):
+        im = self.getPcaImage(c=c, idx=idx, set=set)
+        noise = np.random.rand(self.n_comp)
         im = im + (intensity*noise)
         return im
 
-    def getNoisySet(self, intensity=0.1, set="test", flat=False, shuffle=False):
+    def getNoisySet(self, intensity=0.1, set="test", flat=False, shuffle=False, pca=False):
         x = []
         y = []
-        for c in range(10):
-            for idx in range(100):
-                x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat))
-                y.append(c)
+        if pca:
+            for c in range(10):
+                for idx in range(100):
+                    x.append(self.getNoisyPcaImage(c=c, idx=idx, set=set, intensity=intensity))
+                    y.append(c)            
+        else:
+            for c in range(10):
+                for idx in range(100):
+                    x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat))
+                    y.append(c)
+            
 
         x = np.array(x)
         y = np.array(y)
