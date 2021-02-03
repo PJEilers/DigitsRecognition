@@ -130,7 +130,7 @@ class Loader():
 
         return x,y
 
-    def getWholeTrainSet(self, pca=False, shuffle=False):
+    def getWholeTrainSet(self, pca=False, shuffle=False, flat=False):
         x = []
         y = []
 
@@ -147,15 +147,25 @@ class Loader():
 
         x = np.array(x)
         y = np.array(y)
+        
         if shuffle:
             order = np.arange(x.shape[0])
             np.random.shuffle(order)
             x = x[order]
             y = y[order]
 
+        if flat:
+            length = len(x)
+                # x[i] = x[i].flatten()
+
+            X_flatten = np.empty([length,16*15])
+            for i in range (length):
+                X_flatten[i] = x[i].flatten()
+            x = X_flatten
+
         return x,y
 
-    def getWholeTestSet(self, pca=False, shuffle=False):
+    def getWholeTestSet(self, pca=False, shuffle=False, flat=False):
         x = []
         y = []
 
@@ -177,5 +187,14 @@ class Loader():
             np.random.shuffle(order)
             x = x[order]
             y = y[order]
+
+        if flat:
+            length = len(x)
+                # x[i] = x[i].flatten()
+
+            X_flatten = np.empty([length,16*15])
+            for i in range (length):
+                X_flatten[i] = x[i].flatten()
+            x = X_flatten
 
         return x, y
