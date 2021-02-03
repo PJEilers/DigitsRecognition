@@ -72,15 +72,15 @@ class Loader():
             im = self.test[str(c)][idx]
         #Apply data augmentation if desired
         if aug==True:
-            print(im)
+            # print(im)
             im = im/6.0 #np.uint8(cm.binary(im) * 255)
-            print(np.uint8(im * 255))
+            # print(np.uint8(im * 255))
             im = Image.fromarray(np.uint8(im*255), mode="L")
 
             im = ImageOps.pad(im, (31, 30), 3)#, (255, 255, 255, 255))
             angle = r.randint(-25, 25)
             im = im.rotate(angle)#, fillcolor=(255, 255, 255, 255))
-            im = ImageOps.fit(im, (16, 15))
+            im = ImageOps.fit(im, (15, 16))
 
             im = np.array(im)
 
