@@ -10,8 +10,6 @@ class Loader():
     train = {"0":[], "1":[], "2":[], "3":[], "4":[], "5":[], "6":[], "7":[], "8":[],"9":[]}
     test = {"0":[], "1":[], "2":[], "3":[], "4":[], "5":[], "6":[], "7":[], "8":[], "9":[]}
 
-    pca_train = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
-    pca_test = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
     
     n_comp = 75;
 
@@ -25,8 +23,12 @@ class Loader():
                 else:
                     self.test[str(c)].append(digit)
 
+    def pca_init(self):
+        self.pca_train = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
+        self.pca_test = {"0": [], "1": [], "2": [], "3": [], "4": [], "5": [], "6": [], "7": [], "8": [], "9": []}
 
     def pca(self, n_comp=75):
+        self.pca_init()
         self.n_comp = n_comp;
         scaled = StandardScaler().fit_transform(self.data)
         pca_digit = PCA(n_components=n_comp)
@@ -70,9 +72,9 @@ class Loader():
             im = self.test[str(c)][idx]
         #Apply data augmentation if desired
         if aug==True:
-            #print(im)
+            # print(im)
             im = im/6.0 #np.uint8(cm.binary(im) * 255)
-            #print(np.uint8(im * 255))
+            # print(np.uint8(im * 255))
             im = Image.fromarray(np.uint8(im*255), mode="L")
 
             im = ImageOps.pad(im, (31, 30), 3)#, (255, 255, 255, 255))
@@ -99,7 +101,7 @@ class Loader():
     
     def getNoisyPcaImage(self, c=-1, idx=-1, set="test", intensity = 0.1):
         im = self.getPcaImage(c=c, idx=idx, set=set)
-        noise = np.random.randn(self.n_comp)
+        noise = np.random.rand(self.n_comp)
         im = im + (intensity*noise)
         return im
 
@@ -128,7 +130,7 @@ class Loader():
 
         return x,y
 
-    def getWholeTrainSet(self, pca=False, shuffle=False):
+    def getWholeTrainSet(self, pca=False, shuffle=False, flat=False):
         x = []
         y = []
 
@@ -145,15 +147,25 @@ class Loader():
 
         x = np.array(x)
         y = np.array(y)
+        
         if shuffle:
             order = np.arange(x.shape[0])
             np.random.shuffle(order)
             x = x[order]
             y = y[order]
 
+        if flat:
+            length = len(x)
+                # x[i] = x[i].flatten()
+
+            X_flatten = np.empty([length,16*15])
+            for i in range (length):
+                X_flatten[i] = x[i].flatten()
+            x = X_flatten
+
         return x,y
 
-    def getWholeTestSet(self, pca=False, shuffle=False):
+    def getWholeTestSet(self, pca=False, shuffle=False, flat=False):
         x = []
         y = []
 
@@ -175,5 +187,14 @@ class Loader():
             np.random.shuffle(order)
             x = x[order]
             y = y[order]
+
+        if flat:
+            length = len(x)
+                # x[i] = x[i].flatten()
+
+            X_flatten = np.empty([length,16*15])
+            for i in range (length):
+                X_flatten[i] = x[i].flatten()
+            x = X_flatten
 
         return x, y
