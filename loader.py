@@ -93,9 +93,11 @@ class Loader():
         im = self.getImage(c=c, idx=idx, aug=False, set=set, flat=flat)
         #add Noise to image
         if flat:
-            noise = np.random.rand(240)
+            noise = np.random.normal(0,0.1**0.5, 240)
+            #noise = np.random.rand(240)
         else:
-            noise = np.random.rand(16,15)
+            noise = np.random.normal(0,0.1**0.5, (16,15))
+            #noise = np.random.rand(16,15)
         im = im + (intensity*noise)
         return im
     
