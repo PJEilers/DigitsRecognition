@@ -199,4 +199,34 @@ class Loader():
                 X_flatten[i] = x[i].flatten()
             x = X_flatten
 
-        return x, y
+        return x, y  
+    
+    def augment(self):
+        x = []
+        y = []
+        dataset = None
+        dataset = self.train 
+        # select all the class labels 
+        classlabel = r.sample(range(10), 10)
+    
+        # out of each class type pick up 30 images that are augmented
+        samplelabel = r.sample(range(100), 30)
+        print(samplelabel)
+        
+        for i in range(len(classlabel)):
+            for j in range(len(samplelabel)):
+                img = self.getImage(c=classlabel[i], idx=samplelabel[j], aug=True, set="train", flat=False)
+                img = img / 255.0
+                img = img *6.0
+                dataset[str(classlabel[i])][samplelabel[j]] = img
+
+        # create a list of train and test
+        for c in range(10):
+            for p in range(len(dataset[str(c)])):
+                x.append(dataset[str(c)][p])
+                y.append(c)
+            
+        x = np.array(x)
+        print(x.shape)
+        y = np.array(y)   
+        return x,y
