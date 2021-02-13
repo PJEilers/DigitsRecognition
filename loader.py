@@ -231,23 +231,14 @@ class Loader():
         y = np.array(y)   
         return x,y
     
-    def augment_self(self):
-        x = []
-        y = []
-        dataset = None
-        dataset = self.train 
-        # select all the class labels 
-        classlabel = r.sample(range(10), 10)
-    
-        # out of each class type pick up 30 images that are augmented
-        samplelabel = r.sample(range(100), 30)
+    def augment_self(self, add_per_digit): 
         
-        for i in range(len(classlabel)):
-            for j in range(len(samplelabel)):
-                img = self.getImage(c=classlabel[i], idx=samplelabel[j], aug=True, set="train", flat=False)
+        for i in range(10):
+            for j in range(add_per_digit):
+                img = self.getImage(c=i, idx=j, aug=True, set="train", flat=False)
                 img = img / 255.0
                 img = img *6.0
-                self.train[str(classlabel[i])].append(img)
+                self.train[str(i)].append(img)
         
 
         # create a list of train and test
