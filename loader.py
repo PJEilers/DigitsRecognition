@@ -103,7 +103,7 @@ class Loader():
     
     def getNoisyPcaImage(self, c=-1, idx=-1, set="test", intensity = 0.1):
         im = self.getPcaImage(c=c, idx=idx, set=set)
-        noise = np.random.rand(self.n_comp)
+        noise = np.random.normal(0,1,self.n_comp)
         im = im + (intensity*noise)
         return im
 
@@ -201,7 +201,7 @@ class Loader():
 
         return x, y  
     
-    def augment(self):
+     def augment(self):
         x = []
         y = []
         dataset = None
@@ -230,3 +230,33 @@ class Loader():
         print(x.shape)
         y = np.array(y)   
         return x,y
+    
+    def augment_self(self):
+        x = []
+        y = []
+        dataset = None
+        dataset = self.train 
+        # select all the class labels 
+        classlabel = r.sample(range(10), 10)
+    
+        # out of each class type pick up 30 images that are augmented
+        samplelabel = r.sample(range(100), 30)
+        
+        for i in range(len(classlabel)):
+            for j in range(len(samplelabel)):
+                img = self.getImage(c=classlabel[i], idx=samplelabel[j], aug=True, set="train", flat=False)
+                img = img / 255.0
+                img = img *6.0
+                self.train[str(classlabel[i])].append(img)
+        
+
+        # create a list of train and test
+        #for c in range(10):
+        #    for p in range(len(dataset[str(c)])):
+        #        x.append(dataset[str(c)][p])
+        #        y.append(c)
+        #    
+        #x = np.array(x)
+        #print(x.shape)
+        #y = np.array(y)   
+        #return x,y
