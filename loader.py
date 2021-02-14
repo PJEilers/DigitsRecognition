@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import random as r
 from PIL import Image, ImageOps
-
+import scipy.stats as stats
 class Loader():
 
     train = {"0":[], "1":[], "2":[], "3":[], "4":[], "5":[], "6":[], "7":[], "8":[],"9":[]}
@@ -89,25 +89,35 @@ class Loader():
 
         return im
 
-    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1, flat=False):
+    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="train", intensity = 0.1, flat=False, truncate=False):
         im = self.getImage(c=c, idx=idx, aug=False, set=set, flat=flat)
         #add Noise to image
         if flat:
             noise = np.random.normal(0,1, 240)
             #noise = np.random.rand(240)
-        else:
-            noise = np.random.normal(0,1, (16,15))
+        elif truncate:
+            lower, upper = 0, 6
+            mu, sigma = 0, 1
+            #noise = np.random.normal(0,1, (16,15))
+            X = stats.truncnorm(
+            (lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+            N = stats.norm(loc=mu, scale=sigma)
+            noise = N.rvs((16,15))
+            noise = abs(noise)
             #noise = np.random.rand(16,15)
+            
+            #print(intensity*n)
+        else: noise = np.random.normal(0,1, (16,15))
         im = im + (intensity*noise)
         return im
     
     def getNoisyPcaImage(self, c=-1, idx=-1, set="test", intensity = 0.1):
         im = self.getPcaImage(c=c, idx=idx, set=set)
-        noise = np.random.normal(0,1,self.n_comp)
+        noise = np.random.rand(self.n_comp)
         im = im + (intensity*noise)
         return im
 
-    def getNoisySet(self, intensity=0.1, set="test", flat=False, shuffle=False, pca=False):
+    def getNoisySet(self, intensity=0.1, set="train", flat=False, shuffle=False, pca=False,truncate=False):
         x = []
         y = []
         if pca:
@@ -118,7 +128,7 @@ class Loader():
         else:
             for c in range(10):
                 for idx in range(100):
-                    x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat))
+                    x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat, truncate=truncate))
                     y.append(c)
             
 
@@ -207,11 +217,11 @@ class Loader():
         dataset = None
         dataset = self.train 
         # select all the class labels 
-        classlabel = r.sample(range(10), 10)
-    
+        #classlabel = r.sample(range(10), 10)
+        classlabel = [0,1,2,3,4,5,6,7,8,9]
         # out of each class type pick up 30 images that are augmented
-        samplelabel = r.sample(range(100), 30)
-        print(samplelabel)
+        #samplelabel = r.sample(range(100), 100)
+        samplelabel = list(range(100))
         
         for i in range(len(classlabel)):
             for j in range(len(samplelabel)):
@@ -227,36 +237,5 @@ class Loader():
                 y.append(c)
             
         x = np.array(x)
-        print(x.shape)
         y = np.array(y)   
         return x,y
-    
-    def augment_self(self):
-        x = []
-        y = []
-        dataset = None
-        dataset = self.train 
-        # select all the class labels 
-        classlabel = r.sample(range(10), 10)
-    
-        # out of each class type pick up 30 images that are augmented
-        samplelabel = r.sample(range(100), 30)
-        
-        for i in range(len(classlabel)):
-            for j in range(len(samplelabel)):
-                img = self.getImage(c=classlabel[i], idx=samplelabel[j], aug=True, set="train", flat=False)
-                img = img / 255.0
-                img = img *6.0
-                self.train[str(classlabel[i])].append(img)
-        
-
-        # create a list of train and test
-        #for c in range(10):
-        #    for p in range(len(dataset[str(c)])):
-        #        x.append(dataset[str(c)][p])
-        #        y.append(c)
-        #    
-        #x = np.array(x)
-        #print(x.shape)
-        #y = np.array(y)   
-        #return x,y
