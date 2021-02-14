@@ -79,6 +79,14 @@ class Loader():
 
             im = ImageOps.pad(im, (31, 30), 3)#, (255, 255, 255, 255))
             angle = r.randint(-25, 25)
+
+            # # adapt angle for experiment mlp
+            # anlge_mode = r.randint(0,1)
+            # if anlge_mode == 1:
+            #     angle = r.randint(10, 25)
+            # else:
+            #     angle = r.randint(-25, -10)
+
             im = im.rotate(angle)#, fillcolor=(255, 255, 255, 255))
             im = ImageOps.fit(im, (15, 16))
 
@@ -192,7 +200,6 @@ class Loader():
 
         if flat:
             length = len(x)
-                # x[i] = x[i].flatten()
 
             X_flatten = np.empty([length,16*15])
             for i in range (length):
@@ -201,7 +208,7 @@ class Loader():
 
         return x, y  
     
-    def augment(self):
+    def augment(self): #Augment data and return
         x = []
         y = []
         dataset = None
@@ -231,23 +238,22 @@ class Loader():
         y = np.array(y)   
         return x,y
     
-    def augment_self(self, add_per_digit): 
+    def augment_self(self, add_per_digit):  #Augment training data and add to self.train
+        
+        replace = False
+        if len(self.train["0"]) > 100:
+            replace = True
         
         for i in range(10):
             for j in range(add_per_digit):
                 img = self.getImage(c=i, idx=j, aug=True, set="train", flat=False)
                 img = img / 255.0
                 img = img *6.0
-                self.train[str(i)].append(img)
-        
-
-        # create a list of train and test
-        #for c in range(10):
-        #    for p in range(len(dataset[str(c)])):
-        #        x.append(dataset[str(c)][p])
-        #        y.append(c)
-        #    
-        #x = np.array(x)
-        #print(x.shape)
-        #y = np.array(y)   
-        #return x,y
+                if replace:
+                    self.train[str(i)][100+j] = img
+                else:
+                    self.train[str(i)].append(img)
+                
+                
+                
+                
