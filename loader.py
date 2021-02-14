@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 import random as r
 from PIL import Image, ImageOps
-
+import scipy.stats as stats
 class Loader():
 
     train = {"0":[], "1":[], "2":[], "3":[], "4":[], "5":[], "6":[], "7":[], "8":[],"9":[]}
@@ -79,14 +79,6 @@ class Loader():
 
             im = ImageOps.pad(im, (31, 30), 3)#, (255, 255, 255, 255))
             angle = r.randint(-25, 25)
-
-            # # adapt angle for experiment mlp
-            # anlge_mode = r.randint(0,1)
-            # if anlge_mode == 1:
-            #     angle = r.randint(10, 25)
-            # else:
-            #     angle = r.randint(-25, -10)
-
             im = im.rotate(angle)#, fillcolor=(255, 255, 255, 255))
             im = ImageOps.fit(im, (15, 16))
 
@@ -97,25 +89,35 @@ class Loader():
 
         return im
 
-    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="test", intensity = 0.1, flat=False):
+    def getNoisyImage(self, c=-1, idx=-1, aug=False, set="train", intensity = 0.1, flat=False, truncate=False):
         im = self.getImage(c=c, idx=idx, aug=False, set=set, flat=flat)
         #add Noise to image
         if flat:
             noise = np.random.normal(0,1, 240)
             #noise = np.random.rand(240)
-        else:
-            noise = np.random.normal(0,1, (16,15))
+        elif truncate:
+            lower, upper = 0, 6
+            mu, sigma = 0, 1
+            #noise = np.random.normal(0,1, (16,15))
+            X = stats.truncnorm(
+            (lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+            N = stats.norm(loc=mu, scale=sigma)
+            noise = N.rvs((16,15))
+            noise = abs(noise)
             #noise = np.random.rand(16,15)
+            
+            #print(intensity*n)
+        else: noise = np.random.normal(0,1, (16,15))
         im = im + (intensity*noise)
         return im
     
     def getNoisyPcaImage(self, c=-1, idx=-1, set="test", intensity = 0.1):
         im = self.getPcaImage(c=c, idx=idx, set=set)
-        noise = np.random.normal(0,1,self.n_comp)
+        noise = np.random.rand(self.n_comp)
         im = im + (intensity*noise)
         return im
 
-    def getNoisySet(self, intensity=0.1, set="test", flat=False, shuffle=False, pca=False):
+    def getNoisySet(self, intensity=0.1, set="train", flat=False, shuffle=False, pca=False,truncate=False):
         x = []
         y = []
         if pca:
@@ -126,7 +128,7 @@ class Loader():
         else:
             for c in range(10):
                 for idx in range(100):
-                    x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat))
+                    x.append(self.getNoisyImage(c=c, idx=idx, aug=False, set=set, intensity=intensity, flat=flat, truncate=truncate))
                     y.append(c)
             
 
@@ -200,6 +202,7 @@ class Loader():
 
         if flat:
             length = len(x)
+                # x[i] = x[i].flatten()
 
             X_flatten = np.empty([length,16*15])
             for i in range (length):
@@ -208,17 +211,17 @@ class Loader():
 
         return x, y  
     
-    def augment(self): #Augment data and return
+    def augment(self):
         x = []
         y = []
         dataset = None
         dataset = self.train 
         # select all the class labels 
-        classlabel = r.sample(range(10), 10)
-    
+        #classlabel = r.sample(range(10), 10)
+        classlabel = [0,1,2,3,4,5,6,7,8,9]
         # out of each class type pick up 30 images that are augmented
-        samplelabel = r.sample(range(100), 30)
-        print(samplelabel)
+        #samplelabel = r.sample(range(100), 100)
+        samplelabel = list(range(100))
         
         for i in range(len(classlabel)):
             for j in range(len(samplelabel)):
@@ -234,26 +237,5 @@ class Loader():
                 y.append(c)
             
         x = np.array(x)
-        print(x.shape)
         y = np.array(y)   
         return x,y
-    
-    def augment_self(self, add_per_digit):  #Augment training data and add to self.train
-        
-        replace = False
-        if len(self.train["0"]) > 100:
-            replace = True
-        
-        for i in range(10):
-            for j in range(add_per_digit):
-                img = self.getImage(c=i, idx=j, aug=True, set="train", flat=False)
-                img = img / 255.0
-                img = img *6.0
-                if replace:
-                    self.train[str(i)][100+j] = img
-                else:
-                    self.train[str(i)].append(img)
-                
-                
-                
-                
