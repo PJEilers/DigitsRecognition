@@ -79,6 +79,14 @@ class Loader():
 
             im = ImageOps.pad(im, (31, 30), 3)#, (255, 255, 255, 255))
             angle = r.randint(-25, 25)
+
+            # # adapt angle for experiment mlp
+            # anlge_mode = r.randint(0,1)
+            # if anlge_mode == 1:
+            #     angle = r.randint(10, 25)
+            # else:
+            #     angle = r.randint(-25, -10)
+
             im = im.rotate(angle)#, fillcolor=(255, 255, 255, 255))
             im = ImageOps.fit(im, (15, 16))
 
